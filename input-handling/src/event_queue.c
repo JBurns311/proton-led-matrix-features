@@ -1,16 +1,18 @@
-#include <stdint.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include "event_queue.h"
+#include "hardware/gpio.h"
 
 static Button BUTTONS[BUTTON_CT] = {
-    (Button){ .id = BUTTON_A, .debounce = 0x00, .poll_type = PRESS }
+    (Button){ .id = BUTTON_A, .debounce = 0x00, .poll_type = PRESS },
+    (Button){ .id = BUTTON_B, .debounce = 0x00, .poll_type = PRESS }
 };
 
+// global input event queue
 volatile static Event_Queue queue = (Event_Queue){ .start_idx = 0, .len = 0 };
 
 static void enqueue_event(Event e) {
-    assert(queue.len <= EVENT_QUEUE_SIZE);
+    assert(queue.len < EVENT_QUEUE_SIZE);
     int32_t insert_idx = (queue.start_idx + queue.len) % EVENT_QUEUE_SIZE;
     queue.len++;
     queue.array[insert_idx] = e;
@@ -31,6 +33,9 @@ bool events_queued() {
 void init_io() {
     gpio_set_dir(BUTTON_A, GPIO_IN);
     gpio_set_function(BUTTON_A, GPIO_FUNC_SIO);
+
+    gpio_set_dir(BUTTON_B, GPIO_IN);
+    gpio_set_function(BUTTON_B, GPIO_FUNC_SIO);
 }
 
 void init_event_handling(struct repeating_timer* t) {
@@ -49,14 +54,6 @@ bool event_handling_callback(__unused struct repeating_timer *t) {
         if (b->debounce == (uint8_t)b->poll_type) {
             enqueue_event((Event){ .id = b->id, .action = b->poll_type});
             b->poll_type = b->poll_type == PRESS ? RELEASE : PRESS;
-
-            /*if (b->poll_type == PRESS) {*/
-            /*    b->poll_type = RELEASE;*/
-            /*    printf("Button Pressed\n");*/
-            /*} else if (b->poll_type == RELEASE) {*/
-            /*    b->poll_type = PRESS;*/
-            /*    printf("Button Released\n");*/
-            /*}*/
         }
     }
 

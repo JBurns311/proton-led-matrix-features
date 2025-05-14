@@ -21,13 +21,16 @@ int main () {
             if (e.action == PRESS) {
                 switch (e.id) {
                     case BUTTON_A: printf("Button A Pressed\n"); break;
+                    case BUTTON_B: printf("Button B Pressed\n"); break;
                 }
             } else if (e.action == RELEASE) {
                 switch (e.id) {
                     case BUTTON_A: printf("Button A Released\n"); break;
+                    case BUTTON_B: printf("Button B Released\n"); break;
                 }
             }
         }
+        sleep_ms(500);
     }
 
     return 0;

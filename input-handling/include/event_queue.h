@@ -4,12 +4,14 @@
 #include <stdint.h>
 #include "pico/stdlib.h"
 
-#define BUTTON_CT 1
-#define EVENT_QUEUE_SIZE BUTTON_CT * 4
+#define BUTTON_CT 2
+// queue buffer size much larger than distinct events to prevent buffer overflow in low update rate applications
+#define EVENT_QUEUE_SIZE (BUTTON_CT * 16)
 
-// pinout enum for button based inputs
+// pinout/id enum for button based inputs
 typedef enum {
-    BUTTON_A = 27
+    BUTTON_A = 27,
+    BUTTON_B = 32
 } Input;
 
 typedef enum {
