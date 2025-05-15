@@ -1,14 +1,20 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "hardware/adc.h"
 #include "event_queue.h"
 
 int main () {
     stdio_init_all();
-    sleep_ms(5000); // give time for the serial monitor to init
+    sleep_ms(3000); // give time for the serial monitor to init
 
     printf("Initializing IO\n");
     init_io();
+
+    printf("Initializing ADC\n");
+    adc_init();
+    adc_gpio_init(40);
+    adc_set_round_robin(0b11);
 
     printf("Initiatizing Event Handling Timer\n");
     struct repeating_timer event_handling_timer;
@@ -30,6 +36,9 @@ int main () {
                 }
             }
         }
+
+        printf("ADC = %d\n", adc_read());
+        printf("ADC = %d\n", adc_read());
         sleep_ms(500);
     }
 
