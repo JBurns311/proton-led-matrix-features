@@ -3,9 +3,21 @@
 #include "event_queue.h"
 #include "hardware/gpio.h"
 
+#define BUTTON_CT 2
+#define JOYSTICK_CT 1
+// queue buffer size much larger than distinct events to prevent buffer overflow in low update rate applications
+#define EVENT_QUEUE_SIZE (BUTTON_CT * 16)
+
 static Button BUTTONS[BUTTON_CT] = {
     (Button){ .id = BUTTON_A, .debounce = 0x00, .poll_type = PRESS },
     (Button){ .id = BUTTON_B, .debounce = 0x00, .poll_type = PRESS }
+};
+
+static bool joystick_events_en = false;
+static float joystick_deadzone = 0.3;
+
+static Joystick JOYSTICKS[JOYSTICK_CT] = {
+    (Joystick){ .x_id = 40, .y_id = 41, .prev_pos.x = 0, .prev_pos.y = 0 }
 };
 
 // global input event queue
@@ -43,17 +55,22 @@ void init_event_handling(struct repeating_timer* t) {
 }
 
 bool event_handling_callback(__unused struct repeating_timer *t) {
-    // printf("BUTTON_A = %d\n", gpio_get(BUTTON_A));
     for (int i = 0; i < BUTTON_CT; i++) {
         Button* b = &BUTTONS[i];
         b->debounce <<= 1;
         b->debounce |= (uint)gpio_get(b->id);
 
 
-        // printf("debounce = %d, poll type = %d\n", b->debounce, b->poll_type);
         if (b->debounce == (uint8_t)b->poll_type) {
-            enqueue_event((Event){ .id = b->id, .action = b->poll_type});
+            enqueue_event((Event){ .type = BUTTON, .button.id = b->id, .button.action = b->poll_type});
             b->poll_type = b->poll_type == PRESS ? RELEASE : PRESS;
+        }
+    }
+
+    if (joystick_events_en) {
+        for (int i = 0; i < JOYSTICK_CT; i++) {
+            Joystick* j = &JOYSTICKS[i];
+            
         }
     }
 
